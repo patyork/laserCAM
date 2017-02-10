@@ -278,6 +278,17 @@
                     { x:10, y:6, width:2, height: 4},
 
                 ];
+
+                if(localStorage.getItem('last_layout')) {
+                    $scope.widgets = angular.fromJson(localStorage.getItem('last_layout'));
+                }
+
+
+                $scope.saveLayout = function() {
+                    localStorage.setItem('last_layout', angular.toJson($scope.widgets));
+                }
+
+
                 $scope.addWidget = function() {
                     var newWidget = { x:0, y:0, width:1, height:1 };
                     $scope.widgets.push(newWidget);
@@ -294,18 +305,22 @@
                 };
                 $scope.onDragStop = function(event, ui) {
                     $log.log("onDragStop event: "+event+" ui:"+ui);
+                    $scope.saveLayout();
                 };
                 $scope.onResizeStart = function(event, ui) {
                     $log.log("onResizeStart event: "+event+" ui:"+ui);
                 };
                 $scope.onResizeStop = function(event, ui) {
                     $log.log("onResizeStop event: "+event+" ui:"+ui);
+                    $scope.saveLayout();
                 };
                 $scope.onItemAdded = function(item) {
                     $log.log("onItemAdded item: "+item);
+                    $scope.saveLayout();
                 };
                 $scope.onItemRemoved = function(item) {
                     $log.log("onItemRemoved item: "+item);
+                    $scope.saveLayout();
                 };
             });
 </script>
