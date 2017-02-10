@@ -44,42 +44,24 @@
             border: dashed #c9c9c9 2px;
         }
     </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 </head>
 
-<body>
+<body ng-app="GridStack" ng-controller="DemoCtrl">
 <div id="container"></div>
 <div id="info">
     Mouse + Left: Rotate | Scroll Wheel: Zoom | Mouse + Right: Pan | Keyboard "R": Reset View<br />
-    Change Texture: <input id="userImage" type="file" onchange="streamFileToBuffer()" />
+    Change Texture: <input style="display: inline-block" id="userImage" type="file" onchange="streamFileToBuffer()" />
 </div>
 
-<div id="gridstackDiv" class="grid-stack">
-    <div class="grid-stack-item"
-         data-gs-x="0" data-gs-y="0"
-         data-gs-width="2" data-gs-height="3">
-        <div class="grid-stack-item-content"></div>
-    </div>
-    <div class="grid-stack-item"
-         data-gs-x="10" data-gs-y="0"
-         data-gs-width="2" data-gs-height="3">
-        <div class="grid-stack-item-content"></div>
-    </div>
 
-    <div class="grid-stack-item"
-         data-gs-x="0" data-gs-y="3"
-         data-gs-width="2" data-gs-height="4">
-        <div class="grid-stack-item-content">Hey!<br />Hey!<br />Hey!<br />Hey!<br />Hey!<br />Hey!<br /></div>
-    </div>
-    <div class="grid-stack-item"
-         data-gs-x="10" data-gs-y="4"
-         data-gs-width="2" data-gs-height="3">
-        <div class="grid-stack-item-content"></div>
-    </div>
 
-    <div class="grid-stack-item"
-         data-gs-x="0" data-gs-y="7"
-         data-gs-width="2" data-gs-height="3">
-        <div class="grid-stack-item-content">Hey!<br />Hey!<br />Hey!<br />Hey!<br />Hey!<br />Hey!<br /></div>
+<div gridstack class="grid-stack" options="options" on-change="onChange(event,items)" on-drag-start="onDragStart(event,ui)" on-drag-stop="onDragStop(event,ui)" on-resize-start="onResizeStart(event,ui)" on-resize-stop="onResizeStop(event,ui)">
+    <div gridstack-item ng-repeat="w in widgets" class="grid-stack-item" gs-item-x="w.x" gs-item-y="w.y"
+         gs-item-width="w.width" gs-item-height="w.height" gs-item-autopos="1" on-item-added="onItemAdded(item)" on-item-removed="onItemRemoved(item)">
+        <div class="grid-stack-item-content">
+            <a class="btn btn-primary" ng-click="removeWidget(w)" href="#">remove</a>
+        </div>
     </div>
 </div>
 
@@ -93,7 +75,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
 <script src="lib/lodash.min.js"></script>
 <link rel="stylesheet" href="css/gridstack.min.css" />
+<script src="lib/angular.min.js"></script>
 <script src="lib/gridstack.min.js"></script>
+<script src="lib/gridstack-angular.min.js"></script>
 
 <script>
 
@@ -273,16 +257,47 @@
 
 <!-- Gridstack -->
 <script type="text/javascript">
-    $(function () {
-        var options = {
-            cellHeight: 80,
-            verticalMargin: 10,
-            height: 10,
-            float: true
-        };
-        $('.grid-stack').gridstack(options);
-    });
+    var app = angular.module('GridStack', ['gridstack-angular']).
+            controller('DemoCtrl', function($scope, $log) {
+                $scope.widgets = [{ x:0, y:0, width:1, height:1 }, { x:0, y:0, width:3, height:1 }];
+                $scope.options = {
+                    cellHeight: 80,
+                    verticalMargin: 10,
+                    height: 10,
+                    float: true
+                };
+                $scope.addWidget = function() {
+                    var newWidget = { x:0, y:0, width:1, height:1 };
+                    $scope.widgets.push(newWidget);
+                };
+                $scope.removeWidget = function(w) {
+                    var index = $scope.widgets.indexOf(w);
+                    $scope.widgets.splice(index, 1);
+                };
+                $scope.onChange = function(event, items) {
+                    $log.log("onChange event: "+event+" items:"+items);
+                };
+                $scope.onDragStart = function(event, ui) {
+                    $log.log("onDragStart event: "+event+" ui:"+ui);
+                };
+                $scope.onDragStop = function(event, ui) {
+                    $log.log("onDragStop event: "+event+" ui:"+ui);
+                };
+                $scope.onResizeStart = function(event, ui) {
+                    $log.log("onResizeStart event: "+event+" ui:"+ui);
+                };
+                $scope.onResizeStop = function(event, ui) {
+                    $log.log("onResizeStop event: "+event+" ui:"+ui);
+                };
+                $scope.onItemAdded = function(item) {
+                    $log.log("onItemAdded item: "+item);
+                };
+                $scope.onItemRemoved = function(item) {
+                    $log.log("onItemRemoved item: "+item);
+                };
+            });
 </script>
+
 
 </body>
 </html>
