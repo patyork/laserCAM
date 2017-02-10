@@ -54,36 +54,21 @@
 
     var cross;
 
+    var uploadedImage = document.createElement( 'img' ); // Placeholder for texture
+
     init();
     animate();
 
     function streamFileToBuffer(){
-        var uploadedImage = document.createElement( 'img' );
         var file    = document.querySelector('input[type=file]').files[0]; //sames as here
         var reader  = new FileReader();
 
         reader.onloadend = function () {
             uploadedImage.src = reader.result;
 
-            var texture = new THREE.Texture(uploadedImage);
-            texture.needsUpdate = true;
-            texture.minFilter = THREE.LinearFilter;
+            applyTexture();
 
-            var material = new THREE.MeshLambertMaterial({map: texture});
-            var geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,0 );
-
-            // Reverse back face - make it appear as a 2D iamge floating in 3D space
-            geometry.faceVertexUvs[0][2] =  [new THREE.Vector2(1,1), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)];
-            geometry.faceVertexUvs[0][3] =  [new THREE.Vector2(1,0), new THREE.Vector2(0, 0), new THREE.Vector2(0, 1)];
-
-            var cube = new THREE.Mesh( geometry, material );
-
-            cube.position.z = 0.1; // run up a bit, so the axes don't interfere with the display of the rectangle
-            scene.remove(removable_items.pop());
-
-            removable_items.push(cube);
-            scene.add( cube );
-            render();
+            localStorage.setItem('last_image', uploadedImage.src);
 
         };
 
@@ -94,6 +79,27 @@
         }
     }
 
+    function applyTexture() {
+        var texture = new THREE.Texture(uploadedImage);
+        texture.needsUpdate = true;
+        texture.minFilter = THREE.LinearFilter;
+
+        var material = new THREE.MeshLambertMaterial({map: texture});
+        var geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,0 );
+
+        // Reverse back face - make it appear as a 2D iamge floating in 3D space
+        geometry.faceVertexUvs[0][2] =  [new THREE.Vector2(1,1), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)];
+        geometry.faceVertexUvs[0][3] =  [new THREE.Vector2(1,0), new THREE.Vector2(0, 0), new THREE.Vector2(0, 1)];
+
+        var cube = new THREE.Mesh( geometry, material );
+
+        cube.position.z = 0.2; // run up a bit, so the axes don't interfere with the display of the rectangle
+        scene.remove(removable_items.pop());
+
+        removable_items.push(cube);
+        scene.add( cube );
+        render();
+    }
 
 
     function init() {
@@ -129,22 +135,6 @@
         axes = new THREE.AxisHelper( 1000 );
         scene.add( axes );
 
-        var loader = new THREE.TextureLoader();
-        // URL of texture
-        loader.load("boxtexture.jpg", function(texture){
-            material = new THREE.MeshLambertMaterial({map: texture});
-
-            geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,.0001 );
-            var cube = new THREE.Mesh( geometry, material );
-
-            cube.position.z = 0.1;
-            scene.add( cube );
-
-            removable_items.push(cube);
-
-            render();
-        });
-
 
 
 
@@ -178,6 +168,29 @@
 
         window.addEventListener( 'resize', onWindowResize, false );
         //
+
+        if(localStorage.getItem('last_image')) {
+            uploadedImage.src = localStorage.getItem('last_image');
+
+            applyTexture();
+        }
+        else {
+            var loader = new THREE.TextureLoader();
+            // URL of texture
+            loader.load("boxtexture.jpg", function (texture) {
+                material = new THREE.MeshLambertMaterial({map: texture});
+
+                geometry = new THREE.BoxGeometry(texture.image.width / 10.0, texture.image.height / 10.0, .0001);
+                var cube = new THREE.Mesh(geometry, material);
+
+                cube.position.z = 0.2;
+                scene.add(cube);
+
+                removable_items.push(cube);
+
+                render();
+            });
+        }
 
         render();
     }
