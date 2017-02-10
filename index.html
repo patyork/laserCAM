@@ -1,51 +1,251 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset=utf-8>
-    <title>My first three.js app</title>
+    <title>three.js webgl - trackball controls</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
-        body { margin: 0; }
-        canvas { width: 100%; height: 100% }
+        body {
+            color: #000;
+            font-family:Monospace;
+            font-size:13px;
+            text-align:center;
+            font-weight: bold;
+
+            background-color: #fff;
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        #info {
+            color:#000;
+            position: absolute;
+            top: 0px; width: 100%;
+            padding: 5px;
+
+        }
+
+        a {
+            color: red;
+        }
     </style>
 </head>
+
 <body>
+<div id="container"></div>
+<div id="info">
+    <a href="http://threejs.org" target="_blank">three.js</a> - trackball controls example<br />
+    MOVE mouse &amp; press LEFT/A: rotate, MIDDLE/S: zoom, RIGHT/D: pan<br />
+    Change Texture: <input id="userImage" type="file" onchange="previewFile()" />
+</div>
+
 <script src="lib/three.js"></script>
+
+<script src="lib/controls/TrackballControls.js"></script>
+
+<script src="lib/Detector.js"></script>
+<script src="lib/stats.min.js"></script>
+
 <script>
-    // Our Javascript will go here.
 
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
+    var container, stats;
+
+    var camera, controls, scene, renderer;
+    var removable_items = [];
+
+    var cross;
+
+    init();
+    animate();
+
+    function previewFile(){
+        //var preview = document.querySelector('img'); //selects the query named img
+        var preview = document.createElement( 'img' );
+        var file    = document.querySelector('input[type=file]').files[0]; //sames as here
+        var reader  = new FileReader();
+
+        reader.onloadend = function () {
+            preview.src = reader.result;
+
+            var texture = new THREE.Texture(preview);
+            texture.needsUpdate = true;
+            texture.minFilter = THREE.LinearFilter;
+
+            var material = new THREE.MeshLambertMaterial({map: texture});
+            var geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,0 );
+
+            console.log(geometry.faceVertexUvs);
+
+            tmp = geometry.faceVertexUvs[0][2]
+            geometry.faceVertexUvs[0][2] =  [new THREE.Vector2(1,1), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)];
+            geometry.faceVertexUvs[0][3] =  [new THREE.Vector2(1,0), new THREE.Vector2(0, 0), new THREE.Vector2(0, 1)];
+            //geometry.faceVertexUvs[0][3] = geometry.faceVertexUvs[0][1];
+            console.log(geometry.faceVertexUvs);
+
+            //geometry.faceVertexUvs[0][2] = [new THREE.Vector2(0, 0), new THREE.Vector2(1, 1), new THREE.Vector2(0, 1)];
+
+            var cube = new THREE.Mesh( geometry, material );
+
+            cube.position.z = 0.1;
+            scene.remove(removable_items.pop());
+
+            removable_items.push(cube);
+            scene.add( cube );
+            render();
+
+        }
+
+        if (file) {
+            reader.readAsDataURL(file); //reads the data as a URL
+        } else {
+            preview.src = "";
+        }
+    }
 
 
-    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-    var cube = new THREE.Mesh( geometry, material );
-    scene.add( cube );
 
-    camera.position.z = 15;
+    function init() {
 
-    //create a blue LineBasicMaterial
-    var material = new THREE.LineBasicMaterial({ color: 0x0000ff });
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(-10, 0, 0));
-    geometry.vertices.push(new THREE.Vector3(0, 10, 0));
-    geometry.vertices.push(new THREE.Vector3(10, 0, 0));
-    var line = new THREE.Line(geometry, material);
-    scene.add(line);
+        camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1500 );
+        camera.position.z = 200;
 
+        controls = new THREE.TrackballControls( camera );
+
+        console.log(camera.position);
+
+        controls.rotateSpeed = 1.0 * 10;
+        controls.zoomSpeed = 1.8 * 10;
+        controls.panSpeed = 0.8 * 10;
+
+        controls.noZoom = false;
+        controls.noPan = false;
+
+        controls.staticMoving = true;
+        controls.dynamicDampingFactor = 0.3;
+
+        controls.keys = [ 65, 83, 68 ];
+
+        controls.addEventListener( 'change', render );
+
+
+
+        // world
+
+        scene = new THREE.Scene();
+        //scene.fog = new THREE.FogExp2( 0xcccccc, 0.00002 );
+
+        var geometry = new THREE.CylinderGeometry( 0, 10, 30, 4, 1 );
+        var material;
+
+        // axes
+        axes = new THREE.AxisHelper( 1000 );
+        scene.add( axes );
+
+        var loader = new THREE.TextureLoader();
+        // URL of texture
+        loader.load("boxtexture.jpg", function(texture){
+            material = new THREE.MeshLambertMaterial({map: texture});
+
+            console.log(texture);
+            //mesh = new THREE.Mesh(geometry, material);
+            //scene.add(mesh);
+
+            /*for ( var i = 0; i < 500; i ++ ) {
+
+                var mesh = new THREE.Mesh( geometry, material );
+                mesh.position.x = ( Math.random() - 0.5 ) * 1000;
+                mesh.position.y = ( Math.random() - 0.5 ) * 1000;
+                mesh.position.z = ( Math.random() - 0.5 ) * 1000;
+                mesh.updateMatrix();
+                mesh.matrixAutoUpdate = false;
+                scene.add( mesh );
+
+            }*/
+
+            geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,.0001 );
+            var cube = new THREE.Mesh( geometry, material );
+
+            cube.position.z = 0.1;
+            scene.add( cube );
+
+            removable_items.push(cube);
+
+            render();
+        });
+
+
+
+
+        // lights
+
+        light = new THREE.DirectionalLight( 0xffffff );
+        light.position.set( 1, 1, 1 );
+        scene.add( light );
+
+        light = new THREE.DirectionalLight( 0xffffff );
+        light.position.set( -1, -1, -1 );
+        scene.add( light );
+
+        light = new THREE.AmbientLight( 0xffffff );
+        scene.add( light );
+
+
+        // renderer
+
+        renderer = new THREE.WebGLRenderer( { antialias: false } );
+        //renderer.setClearColor( scene.fog.color );
+        renderer.setClearColor( '#cccccc' );
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        container = document.getElementById( 'container' );
+        container.appendChild( renderer.domElement );
+
+        stats = new Stats();
+        container.appendChild( stats.dom );
+
+        //
+
+        window.addEventListener( 'resize', onWindowResize, false );
+        //
+
+        render();
+
+    }
+
+    function onWindowResize() {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+        controls.handleResize();
+
+        render();
+
+    }
+
+    function animate() {
+
+        requestAnimationFrame( animate );
+        controls.update();
+
+    }
 
     function render() {
-        requestAnimationFrame( render );
-        cube.rotation.x += 0.1;
-        cube.rotation.y += 0.1;
+
         renderer.render( scene, camera );
+        stats.update();
+
+        console.log(camera.position, camera.getWorldDirection(), camera.rotation);
+
     }
-    render();
+
 
 </script>
+
 </body>
 </html>
