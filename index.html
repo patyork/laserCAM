@@ -7,7 +7,7 @@
     <style>
         body {
             color: #000;
-            font-family:Monospace;
+            font-family:sans-serif;
             font-size:13px;
             text-align:center;
             font-weight: bold;
@@ -25,8 +25,22 @@
 
         }
 
+
+
         a {
             color: red;
+        }
+    </style>
+    <style type="text/css">
+        .grid-stack {
+            z-index: 9999;
+            width: 100%;
+            position: static !important;
+        }
+        .grid-stack-item-content {
+            color: #2c3e50;
+            text-align: center;
+            background-color: #18bc9c;
         }
     </style>
 </head>
@@ -38,10 +52,31 @@
     Change Texture: <input id="userImage" type="file" onchange="streamFileToBuffer()" />
 </div>
 
+<div id="gridstackDiv" class="grid-stack">
+    <div class="grid-stack-item"
+         data-gs-x="0" data-gs-y="0"
+         data-gs-width="4" data-gs-height="2">
+        <div class="grid-stack-item-content"></div>
+    </div>
+    <div class="grid-stack-item"
+         data-gs-x="4" data-gs-y="0"
+         data-gs-width="4" data-gs-height="4">
+        <div class="grid-stack-item-content">Hey!<br />Hey!<br />Hey!<br />Hey!<br />Hey!<br />Hey!<br /></div>
+    </div>
+</div>
+
+
 <script src="lib/three.js"></script>
 <script src="lib/controls/TrackballControls.js"></script>
 <script src="lib/Detector.js"></script>
 <script src="lib/stats.min.js"></script>
+
+<script src="lib/jquery-3.1.1.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
+<script src="lib/lodash.min.js"></script>
+<link rel="stylesheet" href="css/gridstack.min.css" />
+<script src="lib/gridstack.min.js"></script>
 
 <script>
 
@@ -217,6 +252,17 @@
     }
 
 
+</script>
+
+<!-- Gridstack -->
+<script type="text/javascript">
+    $(function () {
+        var options = {
+            cellHeight: 80,
+            verticalMargin: 10
+        };
+        $('.grid-stack').gridstack(options);
+    });
 </script>
 
 </body>
