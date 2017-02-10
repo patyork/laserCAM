@@ -34,15 +34,12 @@
 <body>
 <div id="container"></div>
 <div id="info">
-    <a href="http://threejs.org" target="_blank">three.js</a> - trackball controls example<br />
-    MOVE mouse &amp; press LEFT/A: rotate, MIDDLE/S: zoom, RIGHT/D: pan<br />
-    Change Texture: <input id="userImage" type="file" onchange="previewFile()" />
+    Mouse + Left: Rotate | Scroll Wheel: Zoom | Mouse + Right: Pan | Keyboard "R": Reset View<br />
+    Change Texture: <input id="userImage" type="file" onchange="streamFileToBuffer()" />
 </div>
 
 <script src="lib/three.js"></script>
-
 <script src="lib/controls/TrackballControls.js"></script>
-
 <script src="lib/Detector.js"></script>
 <script src="lib/stats.min.js"></script>
 
@@ -60,54 +57,46 @@
     init();
     animate();
 
-    function previewFile(){
-        //var preview = document.querySelector('img'); //selects the query named img
-        var preview = document.createElement( 'img' );
+    function streamFileToBuffer(){
+        var uploadedImage = document.createElement( 'img' );
         var file    = document.querySelector('input[type=file]').files[0]; //sames as here
         var reader  = new FileReader();
 
         reader.onloadend = function () {
-            preview.src = reader.result;
+            uploadedImage.src = reader.result;
 
-            var texture = new THREE.Texture(preview);
+            var texture = new THREE.Texture(uploadedImage);
             texture.needsUpdate = true;
             texture.minFilter = THREE.LinearFilter;
 
             var material = new THREE.MeshLambertMaterial({map: texture});
             var geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,0 );
 
-            console.log(geometry.faceVertexUvs);
-
-            tmp = geometry.faceVertexUvs[0][2]
+            // Reverse back face - make it appear as a 2D iamge floating in 3D space
             geometry.faceVertexUvs[0][2] =  [new THREE.Vector2(1,1), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)];
             geometry.faceVertexUvs[0][3] =  [new THREE.Vector2(1,0), new THREE.Vector2(0, 0), new THREE.Vector2(0, 1)];
-            //geometry.faceVertexUvs[0][3] = geometry.faceVertexUvs[0][1];
-            console.log(geometry.faceVertexUvs);
-
-            //geometry.faceVertexUvs[0][2] = [new THREE.Vector2(0, 0), new THREE.Vector2(1, 1), new THREE.Vector2(0, 1)];
 
             var cube = new THREE.Mesh( geometry, material );
 
-            cube.position.z = 0.1;
+            cube.position.z = 0.1; // run up a bit, so the axes don't interfere with the display of the rectangle
             scene.remove(removable_items.pop());
 
             removable_items.push(cube);
             scene.add( cube );
             render();
 
-        }
+        };
 
         if (file) {
             reader.readAsDataURL(file); //reads the data as a URL
         } else {
-            preview.src = "";
+            uploadedImage.src = "";
         }
     }
 
 
 
     function init() {
-
         camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1500 );
         camera.position.z = 200;
 
@@ -130,11 +119,8 @@
         controls.addEventListener( 'change', render );
 
 
-
         // world
-
         scene = new THREE.Scene();
-        //scene.fog = new THREE.FogExp2( 0xcccccc, 0.00002 );
 
         var geometry = new THREE.CylinderGeometry( 0, 10, 30, 4, 1 );
         var material;
@@ -147,22 +133,6 @@
         // URL of texture
         loader.load("boxtexture.jpg", function(texture){
             material = new THREE.MeshLambertMaterial({map: texture});
-
-            console.log(texture);
-            //mesh = new THREE.Mesh(geometry, material);
-            //scene.add(mesh);
-
-            /*for ( var i = 0; i < 500; i ++ ) {
-
-                var mesh = new THREE.Mesh( geometry, material );
-                mesh.position.x = ( Math.random() - 0.5 ) * 1000;
-                mesh.position.y = ( Math.random() - 0.5 ) * 1000;
-                mesh.position.z = ( Math.random() - 0.5 ) * 1000;
-                mesh.updateMatrix();
-                mesh.matrixAutoUpdate = false;
-                scene.add( mesh );
-
-            }*/
 
             geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,.0001 );
             var cube = new THREE.Mesh( geometry, material );
@@ -179,7 +149,6 @@
 
 
         // lights
-
         light = new THREE.DirectionalLight( 0xffffff );
         light.position.set( 1, 1, 1 );
         scene.add( light );
@@ -193,7 +162,6 @@
 
 
         // renderer
-
         renderer = new THREE.WebGLRenderer( { antialias: false } );
         //renderer.setClearColor( scene.fog.color );
         renderer.setClearColor( '#cccccc' );
@@ -212,11 +180,9 @@
         //
 
         render();
-
     }
 
     function onWindowResize() {
-
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
 
@@ -225,23 +191,16 @@
         controls.handleResize();
 
         render();
-
     }
 
     function animate() {
-
         requestAnimationFrame( animate );
         controls.update();
-
     }
 
     function render() {
-
         renderer.render( scene, camera );
         stats.update();
-
-        console.log(camera.position, camera.getWorldDirection(), camera.rotation);
-
     }
 
 
