@@ -48,10 +48,10 @@
 </head>
 
 <body ng-app="GridStack" ng-controller="DemoCtrl">
-<div id="container"></div>
+<laser-canvas id="container" image-upload="selected_file.name" image-data="imageData"></laser-canvas>
 <div id="info">
     Mouse + Left: Rotate | Scroll Wheel: Zoom | Mouse + Right: Pan | Keyboard "R": Reset View<br />
-    {{widgets}}
+    {{imageData.data | limitTo:50}}
 </div>
 
 
@@ -65,7 +65,7 @@
                 <div class="input-group">
                     <label class="input-group-btn">
                         <span class="btn btn-primary">
-                            Browse&hellip; <input type="file" style="display: none;" ng-upload-change="test($event)" id="userImage" onchange="streamFileToBuffer()">
+                            Browse&hellip; <input type="file" style="display: none;" ng-upload-change="test($event)" id="userImage">
                         </span>
                     </label>
                     <input type="text" class="form-control" readonly placeholder="{{selected_file.name}}" />
@@ -91,174 +91,6 @@
 
 <script>
 
-    var container, stats;
-
-    var camera, controls, scene, renderer;
-    var removable_items = [];
-
-    var cross;
-
-    var uploadedImage = document.createElement( 'img' ); // Placeholder for texture
-
-    init();
-    animate();
-
-    function streamFileToBuffer(){
-        var file    = document.querySelector('input[type=file]').files[0]; //sames as here
-        var reader  = new FileReader();
-
-        reader.onloadend = function () {
-            uploadedImage.src = reader.result;
-
-            applyTexture();
-
-            localStorage.setItem('last_image', uploadedImage.src);
-
-        };
-
-        if (file) {
-            reader.readAsDataURL(file); //reads the data as a URL
-        } else {
-            uploadedImage.src = "";
-        }
-    }
-
-    function applyTexture() {
-        var texture = new THREE.Texture(uploadedImage);
-        texture.needsUpdate = true;
-        texture.minFilter = THREE.LinearFilter;
-
-        var material = new THREE.MeshLambertMaterial({map: texture});
-        var geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,0 );
-
-        // Reverse back face - make it appear as a 2D iamge floating in 3D space
-        geometry.faceVertexUvs[0][2] =  [new THREE.Vector2(1,1), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)];
-        geometry.faceVertexUvs[0][3] =  [new THREE.Vector2(1,0), new THREE.Vector2(0, 0), new THREE.Vector2(0, 1)];
-
-        var cube = new THREE.Mesh( geometry, material );
-
-        cube.position.z = 0.2; // run up a bit, so the axes don't interfere with the display of the rectangle
-        scene.remove(removable_items.pop());
-
-        removable_items.push(cube);
-        scene.add( cube );
-        render();
-    }
-
-
-    function init() {
-        camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1500 );
-        camera.position.z = 200;
-
-        controls = new THREE.TrackballControls( camera );
-
-        console.log(camera.position);
-
-        controls.rotateSpeed = 1.0 * 10;
-        controls.zoomSpeed = 1.8 * 10;
-        controls.panSpeed = 0.8 * 10;
-
-        controls.noZoom = false;
-        controls.noPan = false;
-
-        controls.staticMoving = true;
-        controls.dynamicDampingFactor = 0.3;
-
-        controls.keys = [ 65, 83, 68 ];
-
-        controls.addEventListener( 'change', render );
-
-
-        // world
-        scene = new THREE.Scene();
-
-        var geometry = new THREE.CylinderGeometry( 0, 10, 30, 4, 1 );
-        var material;
-
-        // axes
-        axes = new THREE.AxisHelper( 1000 );
-        scene.add( axes );
-
-
-
-
-        // lights
-        light = new THREE.DirectionalLight( 0xffffff );
-        light.position.set( 1, 1, 1 );
-        scene.add( light );
-
-        light = new THREE.DirectionalLight( 0xffffff );
-        light.position.set( -1, -1, -1 );
-        scene.add( light );
-
-        light = new THREE.AmbientLight( 0xffffff );
-        scene.add( light );
-
-
-        // renderer
-        renderer = new THREE.WebGLRenderer( { antialias: false } );
-        //renderer.setClearColor( scene.fog.color );
-        renderer.setClearColor( '#f2f2f2' );
-        renderer.setPixelRatio( window.devicePixelRatio );
-        renderer.setSize( window.innerWidth, window.innerHeight );
-
-        container = document.getElementById( 'container' );
-        container.appendChild( renderer.domElement );
-
-        //stats = new Stats();
-        //container.appendChild( stats.dom );
-
-        //
-
-        window.addEventListener( 'resize', onWindowResize, false );
-        //
-
-        if(localStorage.getItem('last_image')) {
-            uploadedImage.src = localStorage.getItem('last_image');
-
-            applyTexture();
-        }
-        else {
-            var loader = new THREE.TextureLoader();
-            // URL of texture
-            loader.load("boxtexture.jpg", function (texture) {
-                material = new THREE.MeshLambertMaterial({map: texture});
-
-                geometry = new THREE.BoxGeometry(texture.image.width / 10.0, texture.image.height / 10.0, .0001);
-                var cube = new THREE.Mesh(geometry, material);
-
-                cube.position.z = 0.2;
-                scene.add(cube);
-
-                removable_items.push(cube);
-
-                render();
-            });
-        }
-
-        render();
-    }
-
-    function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-
-        renderer.setSize( window.innerWidth, window.innerHeight );
-
-        controls.handleResize();
-
-        render();
-    }
-
-    function animate() {
-        requestAnimationFrame( animate );
-        controls.update();
-    }
-
-    function render() {
-        renderer.render( scene, camera );
-        //stats.update();
-    }
 
 
 </script>
@@ -289,6 +121,11 @@
                 $scope.selected_file = {
                     name: '',
                     location: ''
+                };
+
+                $scope.imageData = {data: '', width:0, height:0, size:0};
+                if(localStorage.getItem('last_image')) {
+                    $scope.imageData.data = localStorage.getItem('last_image');
                 }
 
                 if(localStorage.getItem('last_layout')) {
@@ -363,7 +200,200 @@
                         });
                     }
                 }
-            });
+            }).
+            directive(
+            "laserCanvas",
+            [function () {
+                return {
+                    restrict: "E",
+                    scope: {
+                        imageUpload: "=imageUpload",
+                        imageData: "=imageData"
+                    },
+                    link: function (scope, elem, attr) {
+                        var container, stats;
+
+                        var camera, controls, scene, renderer;
+                        var removable_items = [];
+
+                        var cross;
+
+                        var uploadedImage = document.createElement( 'img' ); // Placeholder for texture
+
+                        init();
+                        animate();
+
+                        scope.$watch("imageUpload", function(newValue, oldValue) {
+                            if (newValue != oldValue) {
+                                streamFileToBuffer();
+                            }
+
+                        });
+
+                        function streamFileToBuffer(){
+                            var file    = document.querySelector('input[type=file]').files[0]; //sames as here
+                            console.log(file);
+                            var reader  = new FileReader();
+
+                            reader.onloadend = function () {
+                                uploadedImage.src = reader.result;
+
+                                applyTexture();
+
+                                localStorage.setItem('last_image', uploadedImage.src);
+                                scope.imageData.data = uploadedImage.src;
+                                scope.$apply();
+
+                            };
+
+                            if (file) {
+                                reader.readAsDataURL(file); //reads the data as a URL
+                            } else {
+                                uploadedImage.src = "";
+                            }
+                        }
+
+                        function applyTexture() {
+                            var texture = new THREE.Texture(uploadedImage);
+                            texture.needsUpdate = true;
+                            texture.minFilter = THREE.LinearFilter;
+
+                            var material = new THREE.MeshLambertMaterial({map: texture});
+                            var geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,0 );
+
+                            // Reverse back face - make it appear as a 2D iamge floating in 3D space
+                            geometry.faceVertexUvs[0][2] =  [new THREE.Vector2(1,1), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)];
+                            geometry.faceVertexUvs[0][3] =  [new THREE.Vector2(1,0), new THREE.Vector2(0, 0), new THREE.Vector2(0, 1)];
+
+                            var cube = new THREE.Mesh( geometry, material );
+
+                            cube.position.z = 0.2; // run up a bit, so the axes don't interfere with the display of the rectangle
+                            scene.remove(removable_items.pop());
+
+                            removable_items.push(cube);
+                            scene.add( cube );
+                            render();
+                        }
+
+
+                        function init() {
+                            camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 1500 );
+                            camera.position.z = 200;
+
+                            controls = new THREE.TrackballControls( camera );
+
+                            console.log(camera.position);
+
+                            controls.rotateSpeed = 1.0 * 10;
+                            controls.zoomSpeed = 1.8 * 10;
+                            controls.panSpeed = 0.8 * 10;
+
+                            controls.noZoom = false;
+                            controls.noPan = false;
+
+                            controls.staticMoving = true;
+                            controls.dynamicDampingFactor = 0.3;
+
+                            controls.keys = [ 65, 83, 68 ];
+
+                            controls.addEventListener( 'change', render );
+
+
+                            // world
+                            scene = new THREE.Scene();
+
+                            var geometry = new THREE.CylinderGeometry( 0, 10, 30, 4, 1 );
+                            var material;
+
+                            // axes
+                            axes = new THREE.AxisHelper( 1000 );
+                            scene.add( axes );
+
+
+
+
+                            // lights
+                            light = new THREE.DirectionalLight( 0xffffff );
+                            light.position.set( 1, 1, 1 );
+                            scene.add( light );
+
+                            light = new THREE.DirectionalLight( 0xffffff );
+                            light.position.set( -1, -1, -1 );
+                            scene.add( light );
+
+                            light = new THREE.AmbientLight( 0xffffff );
+                            scene.add( light );
+
+
+                            // renderer
+                            renderer = new THREE.WebGLRenderer( { antialias: false } );
+                            //renderer.setClearColor( scene.fog.color );
+                            renderer.setClearColor( '#f2f2f2' );
+                            renderer.setPixelRatio( window.devicePixelRatio );
+                            renderer.setSize( window.innerWidth, window.innerHeight );
+
+                            container = document.getElementById( 'container' );
+                            container.appendChild( renderer.domElement );
+
+                            //stats = new Stats();
+                            //container.appendChild( stats.dom );
+
+                            //
+
+                            window.addEventListener( 'resize', onWindowResize, false );
+                            //
+
+                            if(localStorage.getItem('last_image')) {
+                                uploadedImage.src = localStorage.getItem('last_image');
+
+                                applyTexture();
+                            }
+                            else {
+                                var loader = new THREE.TextureLoader();
+                                // URL of texture
+                                loader.load("boxtexture.jpg", function (texture) {
+                                    material = new THREE.MeshLambertMaterial({map: texture});
+
+                                    geometry = new THREE.BoxGeometry(texture.image.width / 10.0, texture.image.height / 10.0, .0001);
+                                    var cube = new THREE.Mesh(geometry, material);
+
+                                    cube.position.z = 0.2;
+                                    scene.add(cube);
+
+                                    removable_items.push(cube);
+
+                                    render();
+                                });
+                            }
+
+                            render();
+                        }
+
+                        function onWindowResize() {
+                            camera.aspect = window.innerWidth / window.innerHeight;
+                            camera.updateProjectionMatrix();
+
+                            renderer.setSize( window.innerWidth, window.innerHeight );
+
+                            controls.handleResize();
+
+                            render();
+                        }
+
+                        function animate() {
+                            requestAnimationFrame( animate );
+                            controls.update();
+                        }
+
+                        function render() {
+                            renderer.render( scene, camera );
+                            //stats.update();
+                        }
+
+                    }
+                }
+            }
+            ]);;
 </script>
 
 
