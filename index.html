@@ -53,8 +53,7 @@
 <body ng-app="GridStack" ng-controller="DemoCtrl">
 <laser-canvas id="container" image-upload="selected_file.name" image-data="imageData"></laser-canvas>
 <div id="info">
-    Mouse + Left: Rotate | Scroll Wheel: Zoom | Mouse + Right: Pan | Keyboard "R": Reset View<br />
-    {{imageData.data | limitTo:50}}
+    Mouse + Left: Rotate | Scroll Wheel: Zoom | Mouse + Right: Pan | Keyboard "R": Reset View
 </div>
 
 
@@ -99,9 +98,19 @@
                     <div class="input-group-addon">Power Band:</div>
                     <input type="text" class="form-control" id="powerBand" ng-model="laser.powerBand" ng-change="hey()" >
                 </div>
-
-
                 <flot dataset="myData" options="myChartOptions" height="200"></flot>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Power Low (S):</div>
+                    <input type="text" class="form-control" id="powerLow" ng-model="laser.powerLow" >
+                </div>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Power High (S):</div>
+                    <input type="text" class="form-control" id="powerHigh" ng-model="laser.powerHigh"  >
+                </div>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Power Off (S):</div>
+                    <input type="text" class="form-control" id="powerOff" ng-model="laser.powerOff"  >
+                </div>
             </div>
         </div>
     </div>
@@ -145,8 +154,8 @@
                 $scope.default_widgets = [
                     { x:0, y:0, width:2, height: 2, id: 'file'},
                     { x:0, y:2, width:2, height: 2, id: 'engravingSettings'},
-                    { x:0, y:4, width:2, height: 4, id: 'laserSettings'},
-                    { x:0, y:8, width:2, height: 2},
+                    { x:0, y:4, width:2, height: 5, id: 'laserSettings'},
+                    { x:0, y:9, width:2, height: 1},
 
                     { x:10, y:0, width:2, height: 4},
                     { x:10, y:4, width:2, height: 2},
@@ -161,13 +170,17 @@
 
                 $scope.pixel = {width: 0.2, height: 0.2};
 
-                $scope.laser = {powerBand: '7.0448*x^5 - 17.159*x^4 + 16.883*x^3 - 8.1055*x^2 + 2.3173*x + 0.0057'};
-                $scope.myData = [{ data: [], yaxis: 1, label: 'sin' }];
+                $scope.laser = {
+                    powerBand: '7.0448*x^5 - 17.159*x^4 + 16.883*x^3 - 8.1055*x^2 + 2.3173*x + 0.0057',
+                    powerLow: 4450,
+                    powerHigh: 8000,
+                    powerOff: 2000
+                };
+                $scope.myData = [{ data: [], yaxis: 1, color: "#337ab7" }];
                 $scope.myChartOptions = {};
                 var parser = new Parser();
                 var expr = parser.parse($scope.laser.powerBand);
                 for (var i = 0; i <= 1; i += 0.01) {
-                    //$scope.myData[0].data.push([i, Math.sin(i)]);
                     $scope.myData[0].data.push([i, expr.evaluate({x: i})]);
                 }
                 console.log($scope.myData[0].data);
@@ -175,9 +188,8 @@
                 $scope.hey = function() {
                     expr = parser.parse($scope.laser.powerBand);
 
-                    $scope.myData = [{ data: [], yaxis: 1, label: 'sin' }];
+                    $scope.myData = [{ data: [], yaxis: 1 }];
                     for (var i = 0; i <= 1; i += 0.01) {
-                        //$scope.myData[0].data.push([i, Math.sin(i)]);
                         $scope.myData[0].data.push([i, expr.evaluate({x: i})]);
                     }
 
