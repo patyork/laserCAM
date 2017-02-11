@@ -39,7 +39,7 @@
         }
         .grid-stack-item-content {
             color: #2c3e50;
-            text-align: center;
+            text-align: left;
             background-color: #dbdbdb;
             border: dashed #c9c9c9 2px;
         }
@@ -51,7 +51,6 @@
 <div id="container"></div>
 <div id="info">
     Mouse + Left: Rotate | Scroll Wheel: Zoom | Mouse + Right: Pan | Keyboard "R": Reset View<br />
-    Change Texture: <input style="display: inline-block" id="userImage" type="file" onchange="streamFileToBuffer()" /> <br/>
     {{widgets}}
 </div>
 
@@ -61,7 +60,17 @@
     <div gridstack-item ng-repeat="w in widgets" class="grid-stack-item" gs-item-x="w.x" gs-item-y="w.y"
          gs-item-width="w.width" gs-item-height="w.height" gs-item-autopos="0" on-item-added="onItemAdded(item)" on-item-removed="onItemRemoved(item)">
         <div class="grid-stack-item-content">
-            <a class="btn btn-primary" ng-click="removeWidget(w)" href="#">remove</a> <br />
+            <div ng-if="w.id==='file'">
+                <h4>Workspace</h4>
+                <div class="input-group">
+                    <label class="input-group-btn">
+                        <span class="btn btn-primary">
+                            Browse&hellip; <input type="file" style="display: none;" ng-upload-change="test($event)" id="userImage" onchange="streamFileToBuffer()">
+                        </span>
+                    </label>
+                    <input type="text" class="form-control" readonly placeholder="{{selected_file.name}}" />
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -269,7 +278,7 @@
                     float: true
                 };
                 $scope.default_widgets = [
-                    { x:0, y:0, width:2, height: 2},
+                    { x:0, y:0, width:2, height: 2, id: 'file'},
                     { x:0, y:2, width:2, height: 1},
                     { x:0, y:3, width:2, height: 3},
                     { x:0, y:6, width:2, height: 4},
@@ -279,6 +288,11 @@
                     { x:10, y:6, width:2, height: 4},
 
                 ];
+
+                $scope.selected_file = {
+                    name: '',
+                    location: ''
+                }
 
                 if(localStorage.getItem('last_layout')) {
                     $scope.widgets = angular.fromJson(localStorage.getItem('last_layout'));
@@ -297,6 +311,10 @@
 
                 $scope.saveLayout = function() {
                     localStorage.setItem('last_layout', angular.toJson($scope.widgets));
+                };
+
+                $scope.test = function($event) {
+                    $scope.selected_file.name = $event.target.files[0].name;
                 }
 
 
@@ -333,6 +351,21 @@
                     $log.log("onItemRemoved item: "+item);
                     $scope.saveLayout();
                 };
+            }).
+            directive("ngUploadChange",function(){
+                return{
+                    scope:{
+                        ngUploadChange:"&"
+                    },
+                    link:function($scope, $element, $attrs){
+                        $element.on("change",function(event){
+                            $scope.ngUploadChange({$event: event})
+                        })
+                        $scope.$on("$destroy",function(){
+                            $element.off();
+                        });
+                    }
+                }
             });
 </script>
 
