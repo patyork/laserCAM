@@ -70,6 +70,7 @@
                     </label>
                     <input type="text" class="form-control" readonly placeholder="{{selected_file.name}}" />
                 </div>
+                <p>{{imageData.size}} {{imageData.width}} {{imageData.height}}</p>
             </div>
         </div>
     </div>
@@ -125,7 +126,8 @@
 
                 $scope.imageData = {data: '', width:0, height:0, size:0};
                 if(localStorage.getItem('last_image')) {
-                    $scope.imageData.data = localStorage.getItem('last_image');
+                    $scope.imageData = angular.fromJson(localStorage.getItem('last_image'));
+                    //$scope.imageData.data = localStorage.getItem('last_image');
                 }
 
                 if(localStorage.getItem('last_layout')) {
@@ -240,8 +242,13 @@
 
                                 applyTexture();
 
-                                localStorage.setItem('last_image', uploadedImage.src);
+                                //localStorage.setItem('last_image', uploadedImage.src);
+
                                 scope.imageData.data = uploadedImage.src;
+                                scope.imageData.size = file.size;
+
+                                localStorage.setItem('last_image', angular.toJson(scope.imageData));
+
                                 scope.$apply();
 
                             };
@@ -257,6 +264,9 @@
                             var texture = new THREE.Texture(uploadedImage);
                             texture.needsUpdate = true;
                             texture.minFilter = THREE.LinearFilter;
+
+                            scope.imageData.width = texture.image.width;
+                            scope.imageData.height = texture.image.height;
 
                             var material = new THREE.MeshLambertMaterial({map: texture});
                             var geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,0 );
@@ -344,7 +354,8 @@
                             //
 
                             if(localStorage.getItem('last_image')) {
-                                uploadedImage.src = localStorage.getItem('last_image');
+                                scope.imageData = angular.fromJson(localStorage.getItem('last_image'));
+                                uploadedImage.src = scope.imageData.data;
 
                                 applyTexture();
                             }
