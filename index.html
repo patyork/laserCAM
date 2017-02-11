@@ -25,7 +25,10 @@
 
         }
 
-
+        .graph {
+            display: inline-block;
+            margin: 0 auto;
+        }
 
         a {
             color: red;
@@ -70,7 +73,35 @@
                     </label>
                     <input type="text" class="form-control" readonly placeholder="{{selected_file.name}}" />
                 </div>
-                <p>{{imageData.size}} {{imageData.width}} {{imageData.height}}</p>
+                <p>Image Width: {{imageData.width}}px<br />
+                    Image Height: {{imageData.height}}px</p>
+            </div>
+
+            <div ng-if="w.id==='engravingSettings'">
+                <h4>Engraving Settings</h4>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Pixel Width:&nbsp;</div>
+                    <input type="text" class="form-control" id="pixelWidth" ng-model="pixel.width" >
+                </div>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Pixel Height:</div>
+                    <input type="text" class="form-control" id="pixelHeigtht" ng-model="pixel.height" >
+                </div>
+
+
+                <p>Engraving Width: {{imageData.width * pixel.width}}mm<br />
+                    Engraving Height: {{imageData.height * pixel.height}}mm</p>
+            </div>
+
+            <div ng-if="w.id==='laserSettings'">
+                <h4>Laser Settings</h4>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Power Band:</div>
+                    <input type="text" class="form-control" id="powerBand" ng-model="laser.powerBand" ng-change="hey()" >
+                </div>
+
+
+                <flot dataset="myData" options="myChartOptions" height="200"></flot>
             </div>
         </div>
     </div>
@@ -85,10 +116,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
 <script src="lib/lodash.min.js"></script>
 <link rel="stylesheet" href="css/gridstack.min.css" />
+<script src="lib/jquery.flot.js"></script>
 <script src="lib/angular.min.js"></script>
 <script src="lib/angular-sanitize.min.js"></script> <!--TODO: Remove? -->
+
+<script src="lib/angular-flot.js"></script>
 <script src="lib/gridstack.min.js"></script>
 <script src="lib/gridstack-angular.min.js"></script>
+<script src="lib/parser.js"></script>
 
 <script>
 
@@ -98,7 +133,7 @@
 
 <!-- Gridstack -->
 <script type="text/javascript">
-    var app = angular.module('GridStack', ['gridstack-angular', 'ngSanitize']).
+    var app = angular.module('GridStack', ['gridstack-angular', 'ngSanitize', 'angular-flot']).
             controller('DemoCtrl', function($scope, $log, $sanitize) {
                 $scope.options = {
                     cellHeight: 80,
@@ -109,9 +144,9 @@
                 };
                 $scope.default_widgets = [
                     { x:0, y:0, width:2, height: 2, id: 'file'},
-                    { x:0, y:2, width:2, height: 1},
-                    { x:0, y:3, width:2, height: 3},
-                    { x:0, y:6, width:2, height: 4},
+                    { x:0, y:2, width:2, height: 2, id: 'engravingSettings'},
+                    { x:0, y:4, width:2, height: 4, id: 'laserSettings'},
+                    { x:0, y:8, width:2, height: 2},
 
                     { x:10, y:0, width:2, height: 4},
                     { x:10, y:4, width:2, height: 2},
@@ -120,9 +155,36 @@
                 ];
 
                 $scope.selected_file = {
-                    name: '',
+                    name: '(previously loaded)',
                     location: ''
                 };
+
+                $scope.pixel = {width: 0.2, height: 0.2};
+
+                $scope.laser = {powerBand: '7.0448*x^5 - 17.159*x^4 + 16.883*x^3 - 8.1055*x^2 + 2.3173*x + 0.0057'};
+                $scope.myData = [{ data: [], yaxis: 1, label: 'sin' }];
+                $scope.myChartOptions = {};
+                var parser = new Parser();
+                var expr = parser.parse($scope.laser.powerBand);
+                for (var i = 0; i <= 1; i += 0.01) {
+                    //$scope.myData[0].data.push([i, Math.sin(i)]);
+                    $scope.myData[0].data.push([i, expr.evaluate({x: i})]);
+                }
+                console.log($scope.myData[0].data);
+
+                $scope.hey = function() {
+                    expr = parser.parse($scope.laser.powerBand);
+
+                    $scope.myData = [{ data: [], yaxis: 1, label: 'sin' }];
+                    for (var i = 0; i <= 1; i += 0.01) {
+                        //$scope.myData[0].data.push([i, Math.sin(i)]);
+                        $scope.myData[0].data.push([i, expr.evaluate({x: i})]);
+                    }
+
+                };
+
+
+
 
                 $scope.imageData = {data: '', width:0, height:0, size:0};
                 if(localStorage.getItem('last_image')) {
@@ -140,7 +202,6 @@
                 $scope.reset_layout = function() {
                     $scope.widgets = $scope.default_widgets;
                     $scope.saveLayout();
-                    console.log('here');
                 };
                 $scope.widgets = $scope.default_widgets; //# todo remove
 
