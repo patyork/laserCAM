@@ -112,6 +112,43 @@
                     <input type="text" class="form-control" id="powerOff" ng-model="laser.powerOff"  >
                 </div>
             </div>
+
+
+
+            <div ng-if="w.id==='machineSettings'">
+                <h4>Machine Settings</h4>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Units:</div>
+                    <select class="form-control" id="units" ng-model="machine.units" >
+                        <option>mm</option>
+                        <option>in</option>
+                    </select>
+                </div>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Feed Rate:</div>
+                    <input type="text" class="form-control" id="feedRate" ng-model="machine.feedRate" >
+                </div>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Overrun:</div>
+                    <input type="text" class="form-control" id="overrun" ng-model="machine.overrun"  >
+                </div>
+            </div>
+
+            <div ng-if="w.id==='preprocSettings'">
+                <h4>Preprocessing Settings</h4>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    Ignore White?:&nbsp;
+                    <input type="checkbox" class="form-check-input" id="ignoreWhite" ng-model="preproc.ignoreWhite">
+                </div>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    Split on White?:&nbsp;
+                    <input type="checkbox" class="form-check-input" id="splitWhite" ng-model="preproc.splitWhite">
+                </div>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">Minimum White size:</div>
+                    <input type="text" class="form-control" id="splitMinimum" ng-model="preproc.splitMin" ng-disabled="!preproc.splitWhite">
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -157,9 +194,9 @@
                     { x:0, y:7, width:2, height: 8, id: 'laserSettings'},
                     { x:0, y:15, width:2, height: 5},
 
-                    { x:10, y:0, width:2, height: 4},
-                    { x:10, y:4, width:2, height: 2},
-                    { x:10, y:6, width:2, height: 4},
+                    { x:10, y:0, width:2, height: 4, id: 'machineSettings'},
+                    { x:10, y:4, width:2, height: 3, id: 'preprocSettings'},
+                    { x:10, y:7, width:2, height: 4},
 
                 ];
 
@@ -195,6 +232,19 @@
                         $scope.myData[0].data.push([i, expr.evaluate({x: i})]);
                     }
 
+                };
+
+
+                $scope.machine = {
+                    units: 'mm',
+                    feedRate: 500,
+                    overrun: 5
+                };
+
+                $scope.preproc = {
+                    ignoreWhite: true,
+                    splitWhite: false,
+                    splitMin: 12.5
                 };
 
 
