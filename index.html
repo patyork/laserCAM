@@ -88,8 +88,8 @@
                 </div>
 
 
-                <p>Engraving Width: {{imageData.width * pixel.width}}mm<br />
-                    Engraving Height: {{imageData.height * pixel.height}}mm</p>
+                <p>Engraving Width: {{imageData.width * pixel.width | number:4}}mm<br />
+                    Engraving Height: {{imageData.height * pixel.height | number:4}}mm</p>
             </div>
 
             <div ng-if="w.id==='laserSettings'">
