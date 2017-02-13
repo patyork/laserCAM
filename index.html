@@ -81,17 +81,17 @@
             <div ng-if="w.id==='engravingSettings'">
                 <h4>Engraving Settings</h4>
                 <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Pixel Width:&nbsp;</div>
+                    <div class="input-group-addon">Pixel Width ({{machine.units}}):&nbsp;</div>
                     <input type="text" class="form-control" id="pixelWidth" ng-model="pixel.width" >
                 </div>
                 <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Pixel Height:</div>
+                    <div class="input-group-addon">Pixel Height ({{machine.units}}):</div>
                     <input type="text" class="form-control" id="pixelHeigtht" ng-model="pixel.height" >
                 </div>
 
 
-                <p>Engraving Width: {{imageData.width * pixel.width | number:4}}mm<br />
-                    Engraving Height: {{imageData.height * pixel.height | number:4}}mm</p>
+                <p>Engraving Width: {{imageData.width * pixel.width | number:4}}{{machine.units}}<br />
+                    Engraving Height: {{imageData.height * pixel.height | number:4}}{{machine.units}}</p>
             </div>
 
             <div ng-if="w.id==='laserSettings'">
@@ -127,11 +127,11 @@
                     </select>
                 </div>
                 <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Feed Rate:</div>
+                    <div class="input-group-addon">Feed Rate ({{machine.units}}/min):</div>
                     <input type="text" class="form-control" id="feedRate" ng-model="machine.feedRate" >
                 </div>
                 <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Overrun:</div>
+                    <div class="input-group-addon">Overrun ({{machine.units}}):</div>
                     <input type="text" class="form-control" id="overrun" ng-model="machine.overrun"  >
                 </div>
             </div>
@@ -147,16 +147,17 @@
                     <input type="checkbox" class="form-check-input" id="splitWhite" ng-model="preproc.splitWhite">
                 </div>
                 <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Minimum White size:</div>
+                    <div class="input-group-addon">Minimum White size ({{machine.units}}):</div>
                     <input type="text" class="form-control" id="splitMinimum" ng-model="preproc.splitMin" ng-disabled="!preproc.splitWhite">
                 </div>
             </div>
 
             <div ng-if="w.id==='stats'">
                 <h4>Stats</h4>
-                <p>Total Distance: {{distance_image() + distance_y() + distance_overrun() | number:4}}{{machine.units}}<br />
-                Estimate Time: {{estimatedTime() | number:2}} minutes</p>
+                <p>Total Distance: {{distance_image() + distance_y() + distance_overrun() | number:2}}{{machine.units}}<br />
+                    Estimate Time: {{estimatedTime() | number:2}} minutes</p>
             </div>
+
         </div>
     </div>
 </div>
