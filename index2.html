@@ -4,8 +4,6 @@
     <title>three.js webgl - trackball controls</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <style>
         body {
             color: #000;
@@ -27,10 +25,7 @@
 
         }
 
-        .graph {
-            display: inline-block;
-            margin: 0 auto;
-        }
+
 
         a {
             color: red;
@@ -55,12 +50,13 @@
 <body ng-app="GridStack" ng-controller="DemoCtrl">
 <laser-canvas id="container" image-upload="selected_file.name" image-data="imageData"></laser-canvas>
 <div id="info">
-    Mouse + Left: Rotate | Scroll Wheel: Zoom | Mouse + Right: Pan | Keyboard "R": Reset View
+    Mouse + Left: Rotate | Scroll Wheel: Zoom | Mouse + Right: Pan | Keyboard "R": Reset View<br />
+    {{imageData.data}}
 </div>
 
 
 
-<div gridstack-handler="gridstacker" gridstack class="grid-stack" options="options" on-change="onChange(event,items)" on-drag-start="onDragStart(event,ui)" on-drag-stop="onDragStop(event,ui)" on-resize-start="onResizeStart(event,ui)" on-resize-stop="onResizeStop(event,ui)">
+<div gridstack class="grid-stack" options="options" on-change="onChange(event,items)" on-drag-start="onDragStart(event,ui)" on-drag-stop="onDragStop(event,ui)" on-resize-start="onResizeStart(event,ui)" on-resize-stop="onResizeStop(event,ui)">
     <div gridstack-item ng-repeat="w in widgets" class="grid-stack-item" gs-item-x="w.x" gs-item-y="w.y"
          gs-item-width="w.width" gs-item-height="w.height" gs-item-autopos="0" on-item-added="onItemAdded(item)" on-item-removed="onItemRemoved(item)">
         <div class="grid-stack-item-content">
@@ -69,95 +65,12 @@
                 <div class="input-group">
                     <label class="input-group-btn">
                         <span class="btn btn-primary">
-                            Browse&hellip; <input type="file" style="display: none;" ng-upload-change="fileChanged($event)" id="userImage">
+                            Browse&hellip; <input type="file" style="display: none;" ng-upload-change="test($event)" id="userImage">
                         </span>
                     </label>
                     <input type="text" class="form-control" readonly placeholder="{{selected_file.name}}" />
                 </div>
-                <p>Image Width: {{imageData.width}}px<br />
-                    Image Height: {{imageData.height}}px</p>
             </div>
-
-            <div ng-if="w.id==='engravingSettings'">
-                <h4>Engraving Settings</h4>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Pixel Width ({{machine.units}}):&nbsp;</div>
-                    <input type="text" class="form-control" id="pixelWidth" ng-model="pixel.width" >
-                </div>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Pixel Height ({{machine.units}}):</div>
-                    <input type="text" class="form-control" id="pixelHeigtht" ng-model="pixel.height" >
-                </div>
-
-
-                <p>Engraving Width: {{imageData.width * pixel.width | number:4}}{{machine.units}}<br />
-                    Engraving Height: {{imageData.height * pixel.height | number:4}}{{machine.units}}</p>
-            </div>
-
-            <div ng-if="w.id==='laserSettings'">
-                <h4>Laser Settings</h4>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Power Band:</div>
-                    <input type="text" class="form-control" id="powerBand" ng-model="laser.powerBand" ng-change="hey()" >
-                </div>
-                <flot dataset="myData" options="myChartOptions" height="200"></flot>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Power Low (S):</div>
-                    <input type="text" class="form-control" id="powerLow" ng-model="laser.powerLow" >
-                </div>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Power High (S):</div>
-                    <input type="text" class="form-control" id="powerHigh" ng-model="laser.powerHigh"  >
-                </div>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Power Off (S):</div>
-                    <input type="text" class="form-control" id="powerOff" ng-model="laser.powerOff"  >
-                </div>
-            </div>
-
-
-
-            <div ng-if="w.id==='machineSettings'">
-                <h4>Machine Settings</h4>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Units:</div>
-                    <select class="form-control" id="units" ng-model="machine.units" >
-                        <option>mm</option>
-                        <option>in</option>
-                    </select>
-                </div>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Feed Rate ({{machine.units}}/min):</div>
-                    <input type="text" class="form-control" id="feedRate" ng-model="machine.feedRate" >
-                </div>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Overrun ({{machine.units}}):</div>
-                    <input type="text" class="form-control" id="overrun" ng-model="machine.overrun"  >
-                </div>
-            </div>
-
-            <div ng-if="w.id==='preprocSettings'">
-                <h4>Preprocessing Settings</h4>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    Ignore White?:&nbsp;
-                    <input type="checkbox" class="form-check-input" id="ignoreWhite" ng-model="preproc.ignoreWhite">
-                </div>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    Split on White?:&nbsp;
-                    <input type="checkbox" class="form-check-input" id="splitWhite" ng-model="preproc.splitWhite">
-                </div>
-                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                    <div class="input-group-addon">Minimum White size ({{machine.units}}):</div>
-                    <input type="text" class="form-control" id="splitMinimum" ng-model="preproc.splitMin" ng-disabled="!preproc.splitWhite">
-                </div>
-            </div>
-
-            <div ng-if="w.id==='stats'">
-                <h4>Stats</h4>
-                <p>Total Distance: {{distance_image() + distance_y() + distance_overrun() | number:2}}{{machine.units}}<br />
-                    Estimate Time: {{estimatedTime() | number:2}} minutes</p>
-            </div>
-
         </div>
     </div>
 </div>
@@ -168,17 +81,13 @@
 
 <script src="lib/jquery-3.1.1.min.js"></script>
 
-<script src="lib/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
 <script src="lib/lodash.min.js"></script>
 <link rel="stylesheet" href="css/gridstack.min.css" />
-<script src="lib/jquery.flot.js"></script>
 <script src="lib/angular.min.js"></script>
 <script src="lib/angular-sanitize.min.js"></script> <!--TODO: Remove? -->
-
-<script src="lib/angular-flot.js"></script>
 <script src="lib/gridstack.min.js"></script>
 <script src="lib/gridstack-angular.min.js"></script>
-<script src="lib/parser.js"></script>
 
 <script>
 
@@ -188,98 +97,32 @@
 
 <!-- Gridstack -->
 <script type="text/javascript">
-    var app = angular.module('GridStack', ['gridstack-angular', 'ngSanitize', 'angular-flot']).
-            controller('DemoCtrl', function($scope, $log, $sanitize, $http) {
+    var app = angular.module('GridStack', ['gridstack-angular', 'ngSanitize']).
+            controller('DemoCtrl', function($scope, $log, $sanitize) {
                 $scope.options = {
-                    cellHeight: 40,
+                    cellHeight: 80,
                     verticalMargin: 10,
-                    height: 20,
+                    height: 10,
                     width: 12,
                     float: true
                 };
                 $scope.default_widgets = [
-                    { x:0, y:0, width:2, height: 3, id: 'file'},
-                    { x:0, y:3, width:2, height: 4, id: 'engravingSettings'},
-                    { x:0, y:7, width:2, height: 8, id: 'laserSettings'},
-                    { x:0, y:15, width:2, height: 5},
+                    { x:0, y:0, width:2, height: 2, id: 'file'},
+                    { x:0, y:2, width:2, height: 1},
+                    { x:0, y:3, width:2, height: 3},
+                    { x:0, y:6, width:2, height: 4},
 
-                    { x:10, y:0, width:2, height: 4, id: 'machineSettings'},
-                    { x:10, y:4, width:2, height: 3, id: 'preprocSettings'},
-                    { x:10, y:7, width:2, height: 4, id: 'stats'},
-                    { x:14, y:7, width:2, height: 4, id: 'processingOutput'},
+                    { x:10, y:0, width:2, height: 4},
+                    { x:10, y:4, width:2, height: 2},
+                    { x:10, y:6, width:2, height: 4},
 
                 ];
 
-                $scope.gridstacker = null;
-
                 $scope.selected_file = {
-                    name: '(previously loaded)',
+                    name: '',
                     location: ''
                 };
-
-                $scope.pixel = {width: 0.2, height: 0.2};
-
-                $scope.laser = {
-                    powerBand: '7.0448*x^5 - 17.159*x^4 + 16.883*x^3 - 8.1055*x^2 + 2.3173*x + 0.0057',
-                    powerLow: 4450,
-                    powerHigh: 8000,
-                    powerOff: 2000
-                };
-                $scope.myData = [{ data: [], yaxis: 1, color: "#337ab7" }];
-                $scope.myChartOptions = {};
-                var parser = new Parser();
-                var expr = parser.parse($scope.laser.powerBand);
-                for (var i = 0; i <= 1; i += 0.01) {
-                    $scope.myData[0].data.push([i, expr.evaluate({x: i})]);
-                }
-
-                $scope.hey = function() {
-                    expr = parser.parse($scope.laser.powerBand);
-
-                    $scope.myData = [{ data: [], yaxis: 1 }];
-                    for (var i = 0; i <= 1; i += 0.01) {
-                        $scope.myData[0].data.push([i, expr.evaluate({x: i})]);
-                    }
-                };
-
-
-                $scope.machine = {
-                    units: 'mm',
-                    feedRate: 500,
-                    overrun: 5
-                };
-
-                $scope.preproc = {
-                    ignoreWhite: true,
-                    splitWhite: false,
-                    splitMin: 12.5
-                };
-
-                $scope.distance_image = function() {
-                    return ($scope.imageData.height * $scope.imageData.width * $scope.pixel.width);
-                };
-
-                $scope.distance_y = function() {
-                    return ($scope.imageData.height * $scope.pixel.height);
-                };
-
-                $scope.distance_overrun = function() {
-                    return 2.0 *$scope.imageData.height * $scope.machine.overrun;
-;                };
-
-                $scope.estimatedTime = function() {
-                    return ($scope.distance_image() + $scope.distance_y()) / $scope.machine.feedRate + //approximation
-                            ($scope.distance_overrun() / ($scope.machine.feedRate / 2.0)) // average speed approximates the accel/decel well
-                };
-
-
-
-
-                $scope.imageData = {data: '', width:0, height:0, size:0};
-                if(localStorage.getItem('last_image')) {
-                    $scope.imageData = angular.fromJson(localStorage.getItem('last_image'));
-                    //$scope.imageData.data = localStorage.getItem('last_image');
-                }
+                $scope.imageData = {data: 'asdf'};
 
                 if(localStorage.getItem('last_layout')) {
                     $scope.widgets = angular.fromJson(localStorage.getItem('last_layout'));
@@ -291,6 +134,7 @@
                 $scope.reset_layout = function() {
                     $scope.widgets = $scope.default_widgets;
                     $scope.saveLayout();
+                    console.log('here');
                 };
                 $scope.widgets = $scope.default_widgets; //# todo remove
 
@@ -299,16 +143,8 @@
                     localStorage.setItem('last_layout', angular.toJson($scope.widgets));
                 };
 
-                $scope.fileChanged = function($event) {
+                $scope.test = function($event) {
                     $scope.selected_file.name = $event.target.files[0].name;
-
-                    console.log($event.target.files[0])
-
-                    $http.post('upload', {the_file: $event.target.files[0]}, {
-                        withCredentials: true,
-                        headers: {'Content-Type': undefined },
-                        transformRequest: angular.identity
-                    }).success( console.log('cool') ).error( console.log('not cool') );
                 }
 
 
@@ -345,8 +181,6 @@
                     $log.log("onItemRemoved item: "+item);
                     $scope.saveLayout();
                 };
-
-
             }).
             directive("ngUploadChange",function(){
                 return{
@@ -402,13 +236,10 @@
 
                                 applyTexture();
 
-                                //localStorage.setItem('last_image', uploadedImage.src);
-
+                                localStorage.setItem('last_image', uploadedImage.src);
                                 scope.imageData.data = uploadedImage.src;
-                                scope.imageData.size = file.size;
-
-                                localStorage.setItem('last_image', angular.toJson(scope.imageData));
-
+                                console.log('here::')
+                                console.log(removable_items[0]);
                                 scope.$apply();
 
                             };
@@ -424,9 +255,6 @@
                             var texture = new THREE.Texture(uploadedImage);
                             texture.needsUpdate = true;
                             texture.minFilter = THREE.LinearFilter;
-
-                            scope.imageData.width = texture.image.width;
-                            scope.imageData.height = texture.image.height;
 
                             var material = new THREE.MeshLambertMaterial({map: texture});
                             var geometry = new THREE.BoxGeometry( texture.image.width/10.0, texture.image.height/10.0,0 );
@@ -514,8 +342,7 @@
                             //
 
                             if(localStorage.getItem('last_image')) {
-                                scope.imageData = angular.fromJson(localStorage.getItem('last_image'));
-                                uploadedImage.src = scope.imageData.data;
+                                uploadedImage.src = localStorage.getItem('last_image');
 
                                 applyTexture();
                             }
