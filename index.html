@@ -69,7 +69,7 @@
                 <div class="input-group">
                     <label class="input-group-btn">
                         <span class="btn btn-primary">
-                            Browse&hellip; <input type="file" style="display: none;" ng-upload-change="fileChanged($event)" id="userImage">
+                            Browse&hellip; <input type="file" style="display: none;" ng-upload-change="test($event)" id="userImage">
                         </span>
                     </label>
                     <input type="text" class="form-control" readonly placeholder="{{selected_file.name}}" />
@@ -189,7 +189,7 @@
 <!-- Gridstack -->
 <script type="text/javascript">
     var app = angular.module('GridStack', ['gridstack-angular', 'ngSanitize', 'angular-flot']).
-            controller('DemoCtrl', function($scope, $log, $sanitize, $http) {
+            controller('DemoCtrl', function($scope, $log, $sanitize) {
                 $scope.options = {
                     cellHeight: 40,
                     verticalMargin: 10,
@@ -299,16 +299,8 @@
                     localStorage.setItem('last_layout', angular.toJson($scope.widgets));
                 };
 
-                $scope.fileChanged = function($event) {
+                $scope.test = function($event) {
                     $scope.selected_file.name = $event.target.files[0].name;
-
-                    console.log($event.target.files[0])
-
-                    $http.post('upload', {the_file: $event.target.files[0]}, {
-                        withCredentials: true,
-                        headers: {'Content-Type': undefined },
-                        transformRequest: angular.identity
-                    }).success( console.log('cool') ).error( console.log('not cool') );
                 }
 
 
