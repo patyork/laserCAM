@@ -302,13 +302,30 @@
                 $scope.fileChanged = function($event) {
                     $scope.selected_file.name = $event.target.files[0].name;
 
-                    console.log($event.target.files[0])
+                    console.log($event.target.files[0]);
 
-                    $http.post('upload', {the_file: $event.target.files[0]}, {
-                        withCredentials: true,
-                        headers: {'Content-Type': undefined },
-                        transformRequest: angular.identity
-                    }).success( console.log('cool') ).error( console.log('not cool') );
+                    var reader  = new FileReader();
+
+                    reader.onloadend = function () {
+
+                       $http.post('upload', angular.toJson({the_file: reader.result}), {
+                            //withCredentials: true,
+                            headers: {'Content-Type': undefined },
+                            transformRequest: angular.identity
+                        }).then(function successCallback(response) {
+                            console.log('cool');
+                          }, function errorCallback(response) {
+                            console.log('not cool');
+                          });
+
+                    };
+
+                    if ($event.target.files[0]) {
+                        reader.readAsDataURL($event.target.files[0]); //reads the data as a URL
+                    } else {
+                    }
+
+
                 }
 
 
