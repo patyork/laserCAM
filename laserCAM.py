@@ -1,4 +1,57 @@
 import numpy as np
+import re
+
+
+class Function(object):
+    def __init__(self, string=''):
+        self.string = string
+        self.equation = []
+
+        if self.string != '':
+            self.str_to_equation()
+
+    def str_to_equation(self):
+        string = self.string
+        regex = ur"(\s*((-|\+)*\s*\d+\.\d+)\s*((\*x)*\s*(\^\s*\d+)*))"
+
+        matches = re.finditer(regex, string)
+
+        equation = []
+
+        for matchNum, match in enumerate(matches):
+
+            coeff = match.group(2)
+            str_rank = match.group(4)
+
+            coeff = float(coeff.replace(' ', ''))
+            str_rank = str_rank.replace('*', '').replace(' ', '')
+
+            rank = 0
+            if len(str_rank) == 0:
+                rank = 0
+            elif len(str_rank) == 1:
+                rank = 1
+            else:
+                rank = int(str_rank.split('^')[1])
+
+            equation.append((coeff, rank))
+        self.equation = equation
+
+    def eval_equation(self, x):
+        equation = self.equation
+        sumTotal = []
+        for term in equation:
+            coeff, rank = term
+
+            total = 1.0
+            for i in range(rank):
+                total *= x
+            total *= coeff
+
+            sumTotal.append(total)
+
+        return np.sum(np.asarray(sumTotal))
+
 
 class Project(object):
     def __init__(self,
@@ -7,14 +60,14 @@ class Project(object):
                  engraving=None,
                  laser=None,
                  machine=None,
-                 preproccessing=None):
+                 preprocessing=None):
         self.name = name if name else 'Project'
 
         self.image = image
         self.engraving = engraving
         self.laser = laser
         self.machine = machine
-        self.preproccessing = preproccessing
+        self.preprocessing = preprocessing
 
 
 class Image(object):
@@ -39,4 +92,9 @@ class Laser(object):
 
         if power_band_fn is None:
             # build function
-            pass
+            function = Function(self.power_band)
+
+            def power_fn(x):
+                return function.eval_equation(x) * self.power_low + (self.power_high-self.power_low)
+
+            self.power_band_fn = np.vectorize(power_fn)
