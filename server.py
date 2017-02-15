@@ -3,6 +3,10 @@ import json
 import webbrowser, random, threading
 app = Flask(__name__, static_url_path='')
 
+
+import cPickle as pickle #TODO: remove
+
+
 app._static_folder = ''
 
 @app.route("/")
@@ -17,6 +21,9 @@ def upload_file():
 
         received = json.loads(request.get_data())
         encoded = received['the_file'].split(',')
+
+        with open('receivedImage.pkl', 'wb') as fo:
+            pickle.dump(received, fo)
 
         imgData = encoded[1]
         ext = encoded[0].split('/')[1].split(';')[0]
