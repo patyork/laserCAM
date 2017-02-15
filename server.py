@@ -5,8 +5,11 @@ import base64
 import io
 import matplotlib.image as mpimg                        # TODO: remove matplotlib dependency
 import numpy as np
+from laserCAM import Project, Image, Engraving, Laser
 
 app = Flask(__name__, static_url_path='')
+
+project = None
 
 
 import cPickle as pickle #TODO: remove
@@ -40,7 +43,9 @@ def upload_file():
         imgData = io.BytesIO(imgData)
         imgData = mpimg.imread(imgData, format=ext)     # TODO: check what extensions are valid
 
-        return json.dumps([{'hey2': 'hey'}])
+        project = Project(image=Image(imgData, ext))
+
+        return json.dumps([{'hey2': str(type(project.image.image_data))}])
 
     return json.dumps([{'hey': 'hey'}])
 
