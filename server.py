@@ -9,7 +9,7 @@ from laserCAM import Project, Image, Engraving, Laser
 
 app = Flask(__name__, static_url_path='')
 
-project = None
+project = Project()
 
 
 import cPickle as pickle #TODO: remove
@@ -22,7 +22,7 @@ def hello():
     return app.send_static_file('index.html')
 
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/project/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         print 'hey, here'
@@ -43,11 +43,21 @@ def upload_file():
         imgData = io.BytesIO(imgData)
         imgData = mpimg.imread(imgData, format=ext)     # TODO: check what extensions are valid
 
-        project = Project(image=Image(imgData, ext))
+        tmp = Image(imgData, ext)
+        project.image = tmp
+        del(tmp)
 
         return json.dumps([{'hey2': str(type(project.image.image_data))}])
 
     return json.dumps([{'hey': 'hey'}])
+
+
+@app.route("/project/settings", methods=['GET', 'POST'])
+def project_settings():
+    if request.method == 'POST':
+        return request.get_data()
+    return json.dumps([{'project': 'settings'}])
+
 
 if __name__ == "__main__":
     port = 5000 + random.randint(0, 999)

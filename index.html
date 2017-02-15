@@ -158,6 +158,18 @@
                     Estimate Time: {{estimatedTime() | number:2}} minutes</p>
             </div>
 
+
+            <div ng-if="w.id==='process'">
+                <h4>Process</h4>
+                <div class="input-group">
+                    <label class="input-group-btn">
+                        <span class="btn btn-primary">
+                            Generate gCode&hellip; <input style="display: none;" id="start_proc" ng-click="generateGcode()">
+                        </span>
+                    </label>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -206,7 +218,7 @@
                     { x:10, y:0, width:2, height: 4, id: 'machineSettings'},
                     { x:10, y:4, width:2, height: 3, id: 'preprocSettings'},
                     { x:10, y:7, width:2, height: 4, id: 'stats'},
-                    { x:14, y:7, width:2, height: 4, id: 'processingOutput'},
+                    { x:10, y:11, width:2, height: 4, id: 'process'},
 
                 ];
 
@@ -308,7 +320,7 @@
 
                     reader.onloadend = function () {
 
-                       $http.post('upload', angular.toJson({the_file: reader.result}), {
+                       $http.post('project/upload', angular.toJson({the_file: reader.result}), {
                             //withCredentials: true,
                             headers: {'Content-Type': undefined },
                             transformRequest: angular.identity
@@ -326,7 +338,12 @@
                     }
 
 
-                }
+                };
+
+
+                $scope.generateGcode = function() {
+                    
+                };
 
 
                 $scope.addWidget = function() {
