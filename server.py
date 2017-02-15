@@ -1,6 +1,11 @@
-from flask import Flask, request, send_from_directory
+from flask import Flask, request
 import json
 import webbrowser, random, threading
+import base64
+import io
+import matplotlib.image as mpimg                        # TODO: remove matplotlib dependency
+import numpy as np
+
 app = Flask(__name__, static_url_path='')
 
 
@@ -22,18 +27,21 @@ def upload_file():
         received = json.loads(request.get_data())
         encoded = received['the_file'].split(',')
 
-        with open('receivedImage.pkl', 'wb') as fo:
+        with open('receivedImage.pkl', 'wb') as fo:     # TODO: remove
             pickle.dump(received, fo)
 
         imgData = encoded[1]
         ext = encoded[0].split('/')[1].split(';')[0]
 
-        # or, more concisely using with statement
-        with open("imageToSave." + ext, "wb") as fh:
-            fh.write(imgData.decode('base64'))
+        imgData = base64.b64decode(imgData)
+        with open("imageToSave." + ext, "wb") as fh:    # TODO: remove if file never used
+            fh.write(imgData)
 
+        imgData = io.BytesIO(imgData)
+        imgData = mpimg.imread(imgData, format=ext)     # TODO: check what extensions are valid
 
         return json.dumps([{'hey2': 'hey'}])
+
     return json.dumps([{'hey': 'hey'}])
 
 if __name__ == "__main__":
@@ -43,5 +51,4 @@ if __name__ == "__main__":
     threading.Timer(1.25, lambda: webbrowser.open(url)).start()
 
     app.run(port=port, debug=False)
-    #app.run()
 
