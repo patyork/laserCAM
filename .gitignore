@@ -2,3 +2,5 @@
 *.jpeg
 *.png
 *.svg
+.ipynb_checkpoints/*
+*.pkl
