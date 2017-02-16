@@ -70,6 +70,8 @@ class Project(object):
         self.preprocessor = preprocessor
 
     def generate_gcode(self):
+        self.image.normalize_image(white_cutoff=self.preprocessor.white_cutoff)
+        terminator_pixels = self.preprocessor.get_start_stop(self.image.normalized_data)
         pass
 
 
@@ -77,6 +79,8 @@ class Image(object):
     def __init__(self, image_data, original_extension='jpg'):
         self.image_data = image_data
         self.original_extension = original_extension
+
+        print np.min(image_data), np.average(image_data), np.max(image_data)
 
         self._normalized = False
         self.normalized_data = None
@@ -92,9 +96,14 @@ class Image(object):
         if not self._normalized:
             image_data = self.image_data
             image_data = np.average(image_data, axis=-1)[::-1]      # Convert to 1 channel, reverse axis
-            image_data[image_data>=white_cutoff] = 255              # Change near-white values to white
-            image_data = 255. - image_data                          # Reverse colors (simplify power calc: white = less power)
-            image_data /= 255.                                      # Normalize [0., 1.]
+
+            if np.max(image_data) <= 1.0:                           # already normalized to [0, 1]
+                image_data[image_data*255. >= white_cutoff] = 1.0   # Change near-white values to white
+                image_data = 1.0 - image_data                       # Reverse colors (simplify power calc: white = less power)
+            else:
+                image_data[image_data>=white_cutoff] = 255          # Change near-white values to white
+                image_data = 255. - image_data                      # Reverse colors (simplify power calc: white = less power)
+                image_data /= 255.                                  # Normalize [0., 1.]
             self.normalized_data = image_data
             self._normalized = True
 
@@ -137,10 +146,12 @@ class Preprocessor(object):
         self.split_white_value = split_white_value
         self.white_cutoff = white_cutoff
 
-    def get_start_stop(self, normalized_image, overrun):
+        self._terminators = None
+
+    def get_start_stop(self, normalized_image):
         """
         Return a list of (low, high) pixels positions that the laser must pass through on each row.
-        This is sensitive to both the ignore_white & white_cutoff parameters, as well as the overrun lengths.
+        This is sensitive to both the ignore_white & white_cutoff parameters
         :param normalized_image: normalized image data of shape (h, w)
         :param overrun: overrun distance from the Machine
         :return: List of Tuples (low, high)
@@ -148,6 +159,23 @@ class Preprocessor(object):
 
         terminators =[]
 
-        pass
+        if self.split_white:
+            pass                    # TODO: Implement
+
+        if self.ignore_white:
+            for row in normalized_image:
+                indexes = np.where(row > 0.0)[0]
+                if len(indexes) == 0:
+                    terminators.append((None, None))    # row is entirely white
+                else:
+                    terminators.append((indexes[0], indexes[-1]))
+        else:
+            for row in normalized_image:
+                stop = len(row)
+                terminators.append((0, stop))
+        print 'Terminators: ',
+        print terminators
+        self._terminators = terminators
+        return terminators
 
 
