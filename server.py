@@ -69,15 +69,17 @@ def project_settings():
         machine = Machine(units=_machine['units'], feed_rate=_machine['feedRate'],
                           overrun=_machine['overrun'])
         preprocessor = Preprocessor(ignore_white=_preproc['ignoreWhite'], split_white=_preproc['splitWhite'],
-                                    split_white_value=_preproc['splitMin'], white_cuttoff=_preproc['whiteCutoff'])
+                                    split_white_value=_preproc['splitMin'], white_cutoff=_preproc['whiteCutoff'])
 
         project.engraving = engrave
         project.laser = laser
         project.machine = machine
         project.preprocessor = preprocessor
 
+        del(engrave);del(laser);del(machine);del(preprocessor)  # A bit of manual cleanup
 
-        return request.get_data()
+
+        return json.dumps([{'testPower': list(project.laser.power_band_fn(np.asarray([0.0, .2, .5, 1.0])))}])
     return json.dumps([{'project': 'settings'}])
 
 
