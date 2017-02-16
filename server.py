@@ -78,6 +78,8 @@ def project_settings():
 
         del(engrave);del(laser);del(machine);del(preprocessor)  # A bit of manual cleanup
 
+        project.generate_gcode()
+
 
         return json.dumps([{'testPower': list(project.laser.power_band_fn(np.asarray([0.0, .2, .5, 1.0])))}])
     return json.dumps([{'project': 'settings'}])
