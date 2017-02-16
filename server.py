@@ -5,7 +5,7 @@ import base64
 import io
 import matplotlib.image as mpimg                        # TODO: remove matplotlib dependency
 import numpy as np
-from laserCAM import Project, Image, Engraving, Laser
+from laserCAM import Project, Image, Engraving, Laser, Machine, Preprocessor
 
 app = Flask(__name__, static_url_path='')
 
@@ -55,6 +55,28 @@ def upload_file():
 @app.route("/project/settings", methods=['GET', 'POST'])
 def project_settings():
     if request.method == 'POST':
+
+        received = json.loads(request.get_data())
+
+        _engrave = received['engraving']
+        _laser = received['laser']
+        _machine = received['machine']
+        _preproc = received['preprocessing']
+
+        engrave = Engraving(pixel_width=_engrave['width'], pixel_height=_engrave['height'])
+        laser = Laser(power_low=_laser['powerLow'], power_high=_laser['powerHigh'], power_off=_laser['powerOff'],
+                      power_band=_laser['powerBand'])
+        machine = Machine(units=_machine['units'], feed_rate=_machine['feedRate'],
+                          overrun=_machine['overrun'])
+        preprocessor = Preprocessor(ignore_white=_preproc['ignoreWhite'], split_white=_preproc['splitWhite'],
+                                    split_white_value=_preproc['splitMin'], white_cuttoff=_preproc['whiteCutoff'])
+
+        project.engraving = engrave
+        project.laser = laser
+        project.machine = machine
+        project.preprocessor = preprocessor
+
+
         return request.get_data()
     return json.dumps([{'project': 'settings'}])
 

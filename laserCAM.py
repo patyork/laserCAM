@@ -60,14 +60,14 @@ class Project(object):
                  engraving=None,
                  laser=None,
                  machine=None,
-                 preprocessing=None):
+                 preprocessor=None):
         self.name = name if name else 'Project'
 
         self.image = image
         self.engraving = engraving
         self.laser = laser
         self.machine = machine
-        self.preprocessing = preprocessing
+        self.preprocessor = preprocessor
 
 
 class Image(object):
@@ -83,10 +83,10 @@ class Engraving(object):
 
 
 class Laser(object):
-    def __init__(self, power_low, power_high, off_speed, power_band, power_band_fn=None):
+    def __init__(self, power_low, power_high, power_off, power_band, power_band_fn=None):
         self.power_low = power_low
         self.power_high = power_high
-        self.off_speed = off_speed
+        self.power_off = power_off
         self.power_band = power_band
         self.power_band_fn = power_band_fn
 
@@ -98,3 +98,18 @@ class Laser(object):
                 return function.eval_equation(x) * self.power_low + (self.power_high-self.power_low)
 
             self.power_band_fn = np.vectorize(power_fn)
+
+
+class Machine(object):
+    def __init__(self, units, feed_rate, overrun):
+        self.units = units
+        self.feed_rate = feed_rate
+        self.overrun = overrun
+
+
+class Preprocessor(object):
+    def __init__(self, ignore_white, split_white, split_white_value=np.inf, white_cuttoff=255):
+        self.ignore_white = ignore_white
+        self.split_white = split_white
+        self.split_white_value = split_white_value
+        self.white_cuttoff = white_cuttoff

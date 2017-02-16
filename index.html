@@ -150,6 +150,10 @@
                     <div class="input-group-addon">Minimum White size ({{machine.units}}):</div>
                     <input type="text" class="form-control" id="splitMinimum" ng-model="preproc.splitMin" ng-disabled="!preproc.splitWhite">
                 </div>
+                <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                    <div class="input-group-addon">White Cutoff (0 - 255):</div>
+                    <input type="text" class="form-control" id="whiteCutoff" ng-model="preproc.whiteCutoff" >
+                </div>
             </div>
 
             <div ng-if="w.id==='stats'">
@@ -216,8 +220,8 @@
                     { x:0, y:15, width:2, height: 5},
 
                     { x:10, y:0, width:2, height: 4, id: 'machineSettings'},
-                    { x:10, y:4, width:2, height: 3, id: 'preprocSettings'},
-                    { x:10, y:7, width:2, height: 4, id: 'stats'},
+                    { x:10, y:4, width:2, height: 4, id: 'preprocSettings'},
+                    { x:10, y:8, width:2, height: 3, id: 'stats'},
                     { x:10, y:11, width:2, height: 4, id: 'process'},
 
                 ];
@@ -264,7 +268,8 @@
                 $scope.preproc = {
                     ignoreWhite: true,
                     splitWhite: false,
-                    splitMin: 12.5
+                    splitMin: 12.5,
+                    whiteCutoff: 255
                 };
 
                 $scope.distance_image = function() {
@@ -342,7 +347,23 @@
 
 
                 $scope.generateGcode = function() {
-                    
+                    payload = {
+                        engraving: $scope.pixel,
+                        laser: $scope.laser,
+                        machine: $scope.machine,
+                        preprocessing: $scope.preproc
+                    };
+
+                    $http.post('project/settings', angular.toJson(payload), {
+                        //withCredentials: true,
+                        headers: {'Content-Type': 'application/json' },
+                        transformRequest: angular.identity
+                    }).then(function successCallback(response) {
+                        console.log(response);
+                    }, function errorCallback(response) {
+                        console.log('not cool - on gCode creation');
+                    });
+
                 };
 
 
