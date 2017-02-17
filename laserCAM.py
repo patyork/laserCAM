@@ -72,6 +72,43 @@ class Project(object):
     def generate_gcode(self):
         self.image.normalize_image(white_cutoff=self.preprocessor.white_cutoff)
         terminator_pixels = self.preprocessor.get_start_stop(self.image.normalized_data)
+
+
+        # Simple gCode generator (back and forth method)
+        # TODO: handle case of split image (on white)
+        distance_fed = 0.0                  # Used for estimated time metric
+        distance_overran = 0.0              # Used for estimated time metric
+
+        pw = self.engraving.pixel_width
+        ph = self.engraving.pixel_height
+
+        image_data = self.image.normalized_data
+        laserPower = self.laser.power_band_fn(image_data)   # Image to laser intensity (S commands)
+
+        steps = []
+        steps += self.machine.to_gcode()    # ex. G21 _ F500
+        steps += self.laser.to_gcode()      # ex. S2000 _ M3
+
+        # TODO: Add ability to split machining into phases (smaller/shorter gCode files)
+        at_start = False
+        direction_of_travel = 1
+        for row_num, raw_row in enumerate(image_data):
+            edges = terminator_pixels[row_num]
+
+            if edges[0] is None or edges[1] is None:     # Row is all "white", no need to traverse it
+                continue
+            elif not at_start:
+                # Get away from start
+                start_x = edges[1 - int(direction_of_travel == True)] * pw + (direction_of_travel * self.machine.overrun)
+
+                steps.append('G0 X%.4f Y%.4f' % (start_x, row_num * ph))
+
+            # Traverse pixels in row
+            for pixel in raw_row[edges[0] : edges[1]+1][::direction_of_travel]:
+                pixelX =
+
+
+
         pass
 
 
@@ -131,12 +168,26 @@ class Laser(object):
 
             self.power_band_fn = np.vectorize(power_fn)
 
+    def to_gcode(self):
+        return ['S%i' % (self.power_off), 'M3']
+
 
 class Machine(object):
     def __init__(self, units, feed_rate, overrun):
         self.units = units
         self.feed_rate = feed_rate
         self.overrun = overrun
+
+    def to_gcode(self):
+        steps = []
+
+        if self.units == 'mm': steps.append('G21')
+        else: steps.append('G20')
+
+        steps.append('F%i' % self.feed_rate)
+
+        return steps
+
 
 
 class Preprocessor(object):
@@ -173,7 +224,7 @@ class Preprocessor(object):
             for row in normalized_image:
                 stop = len(row)
                 terminators.append((0, stop))
-        print 'Terminators: ',
+        print 'Terminators:',
         print terminators
         self._terminators = terminators
         return terminators
