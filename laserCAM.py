@@ -104,8 +104,9 @@ class Project(object):
                 steps.append('G0 X%.4f Y%.4f' % (start_x, row_num * ph))
 
             # Traverse pixels in row
-            for pixel in raw_row[edges[0] : edges[1]+1][::direction_of_travel]:
-                pixelX =
+            for pixelNum, pixel in enumerate(raw_row[edges[0] : edges[1]+1][::direction_of_travel]):
+                pixelX = (edges[1 - int(direction_of_travel == True)] + int(direction_of_travel == True)) * pw
+                pixelX += pixelNum * pw * direction_of_travel
 
 
 
