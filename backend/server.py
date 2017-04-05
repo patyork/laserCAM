@@ -6,6 +6,7 @@ import io
 import matplotlib.image as mpimg                        # TODO: remove matplotlib dependency
 import numpy as np
 from laserCAM import Project, Image, Engraving, Laser, Machine, Preprocessor
+import os
 
 app = Flask(__name__, static_url_path='')
 
@@ -15,7 +16,7 @@ project = Project()
 import cPickle as pickle #TODO: remove
 
 
-app._static_folder = ''
+app._static_folder = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 
 @app.route("/")
 def hello():
